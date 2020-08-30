@@ -5,7 +5,7 @@
 # 使用方法
 ### 用截图工具（QQ 微信等的截图或者Windows自带的截图）截图或将图片复制到剪切板后在本页面按Ctrl+V粘贴即可在文本框内获取latex代码。注意Word的代码复制出来之后再Word里粘贴要用 右键-> 粘贴 -> 仅粘贴文本 的方式
 
-地址：   https://mathcode.herokuapp.com/
+### 地址：   https://mathcode.herokuapp.com/ 建议加入书签
 
 # 这是什么
 * ### 一个可以把截图中的公式识别出来转换成latex代码的在线工具，部署在heruko上。主要面向中国大陆的学生。
