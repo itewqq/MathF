@@ -1,0 +1,251 @@
+<!Doctype html>
+<html>
+    <meta charset="utf-8">
+    <header>
+         <script src="https://www.recaptcha.net/recaptcha/api.js?render=6Le-e0kaAAAAAGDaIzEJgHyal0TfKTY2iYuCcXaP"></script>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-8FJMQVWMM6"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-8FJMQVWMM6');
+        </script>
+    </header>
+    <body>
+        <script type="text/javascript">
+            const CAPTCHA_CLIENT_SECRET = "6Le-e0kaAAAAAGDaIzEJgHyal0TfKTY2iYuCcXaP";
+            function onSubmit(token) {
+              document.getElementById("demo-form").submit();
+            }
+            function copy_to_clipboard(id) {
+                document.getElementById(id).select();
+                document.execCommand('copy');
+            }
+            function getBase64(file) {
+              return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+              });
+            }
+            document.addEventListener('paste', function (event) {
+                let items = event.clipboardData && event.clipboardData.items;
+                let file = null;
+                let ok = false;
+                if (items && items.length) {
+                    for (var i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf('image') !== -1) {
+                            file = items[i].getAsFile();
+                            ok = true;
+                            break;
+                        }
+                    }
+                }
+                console.log(ok);
+                if(!ok){
+                    return;
+                }
+                var img_base64=getBase64(file);
+                grecaptcha.execute(CAPTCHA_CLIENT_SECRET, {action: 'getcode'}).then(function(token) {
+					return fetch('/validate?token=' + token, {
+						method: 'GET'
+					});
+				})
+                .then(response => {
+                    if (response.ok){
+                        return response.json();
+                    }
+                })
+                .then(function (data) {
+                    console.log(data);
+                    if(data['code'] == 0){
+                        let reader = new FileReader()
+                        reader.onload = function(event) {
+                            var img_area=document.getElementById("img_area");
+                            img_area.innerHTML = '<img style="max-height: 250px;max-width: 500px" src="'+this.result+'" alt=""/>';
+
+                        }
+                        reader.readAsDataURL(file);
+                        if(document.getElementById("rad_pay").checked){
+                            try {
+                                var xhr = new XMLHttpRequest();
+                                xhr.onload = function () {
+                                    var json = JSON.parse(xhr.responseText);
+                                    if (json['code'] == 200) {
+                                        let text_areaI = document.getElementById("latexCodeInline");
+                                        let text_areaD = document.getElementById("latexCodeDisplay");
+                                        let text_areaE = document.getElementById("latexCodeEquation")
+                                        let text_areaW = document.getElementById("wordCode");
+                                        let latex_code = json['text'].replace("\\)", "$").replace("\\(","$").replace("\\]", "$$").replace("\\[","$$");
+                                        text_areaI.innerText = latex_code;
+                                        text_areaD.innerText = '$' + latex_code + '$';
+                                        text_areaE.innerText = '\\begin{equation}\n' + latex_code.substr(1,latex_code.length-2)+ '\\end{equation}\n';
+                                        if(json['data'].length !== 0) {
+                                            text_areaW.innerText = json['data'][0]['value'];
+                                        }else{
+                                            text_areaW.innerText = 'MathML功能目前只能识别单个公式，请准确地截取图片';
+                                        }
+                                        document.getElementById("number_uses").innerText = "Uses: "+json['uses'].toString();
+                                    } else {
+                                        alert(json['message'])
+                                        var img_area = document.getElementById("img_area");
+                                        img_area.innerHTML = '<img style="max-height: 250px;max-width: 500px" src="' + this.result + '" alt=""/>';
+                                    }
+                                };
+                                xhr.open('POST', 'https://service-hzv8746l-1255970853.sh.apigw.tencentcs.com/release/mathcode', true);
+                                xhr.setRequestHeader('Content-Type', 'application/json');
+                                xhr.setRequestHeader('app_id', document.getElementById("app_id").value);
+                                xhr.setRequestHeader('app_key', document.getElementById("app_key").value);
+                                img_base64.then(data => {
+                                    var params = {
+                                        'src': data
+                                    };
+                                    xhr.send(JSON.stringify(params));
+                                });
+                            }catch (e) {
+                                alert(e)
+                            }
+                        }else {
+                            let formData = new FormData();
+                            formData.append('upFile', file, file.name)
+                            formData.append('token', data['token'])
+                            formData.append('tstamp', data['tstamp'])
+                            console.log(formData)
+                            var xhr = new XMLHttpRequest();
+                            xhr.onload = function () {
+                                if (this.status == 429) {
+                                    alert("今日免费接口限额已用完，明天再来吧┑(￣Д ￣)┍\n或者移步付费接口φ(゜▽゜*)♪");
+                                } else {
+                                    var json = JSON.parse(xhr.responseText);
+                                    if (json['code'] === 0) {
+                                        let text_areaI = document.getElementById("latexCodeInline");
+                                        let text_areaD = document.getElementById("latexCodeDisplay");
+                                        let text_areaE = document.getElementById("latexCodeEquation")
+                                        let text_areaW = document.getElementById("wordCode");
+                                        text_areaI.innerText = '$' + json['latex'] + '$';
+                                        text_areaD.innerText = '$$' + json['latex'] + '$$';
+                                        text_areaE.innerText = '\\begin{equation}\n' + json['latex'] + '\\end{equation}\n';
+                                        text_areaW.innerText = json['word'];
+                                    } else {
+                                        alert(json['message'])
+                                        var img_area = document.getElementById("img_area");
+                                        img_area.innerHTML = '<img style="max-height: 250px;max-width: 500px" src="' + this.result + '" alt=""/>';
+                                    }
+                                }
+                            };
+                            try {
+                                xhr.open('POST', './upload', true);
+                                xhr.send(formData);
+                            }catch (e) {
+                                alert(e)
+                            }
+                        }
+
+                    }else{
+                        throw new Error(data['message'])
+                    }
+                }).catch(error=>{
+                    alert(error)
+                });
+            });
+        </script>
+        <style type="text/css">
+            .div1{text-align: center;}
+            .div2{display: inline-block;padding-left: 5px;padding-right: 5px;border: 1px solid;margin-left: 5px;margin-right: 5px;}
+            .div3{display: inline-block;padding-left: 5px;padding-right: 5px;margin-left: 15%;margin-right: 5%;}
+            .button {
+                background-color: #4CAF50;
+                border: none;
+                color: white;
+                padding: 8px 6px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+            }
+            label{
+                display:inline-block;
+                width: 150px;
+            }
+            textarea{
+                resize:none;
+                word-wrap:normal;
+                vertical-align: middle;
+            }
+        </style>
+        <div class="div1">
+            <div style="font-family: 'Microsoft YaHei UI',serif;font-size:20px;font-style: italic;margin-top: 100px;">
+                <a href="https://itewqq.cn/mathpixcsharp-opensource-windows-client/" target="_blank">Web端新增付费接口，点击查看使用说明（PS：广告位招租/(ㄒoㄒ)/）</a>
+            </div>
+            <div id="img_area">
+                <img style="max-height: 250px;max-width: 500px" src="https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=315877498,4102939927&fm=26&gp=0.jpg" alt=""/>
+            </div>
+        </div>
+        <div class="div1">
+            <input type="radio" name="choose_api" value="0" id="rad_free" checked="checked"> 免费接口
+            <input type="radio" name="choose_api" value="1" id="rad_pay"> 第三方付费接口
+            <br><br>
+        </div>
+        <div class="div1">
+            <div class="div3">
+                <div id="id_and_key" style="display: none;">
+                    请填入您的APP_ID和APP_KEY
+                    <input type="text" id="app_id" placeholder="APP_ID">
+                    <input type="text" id="app_key" placeholder="APP_KEY">
+                    <label for="app_key" id="number_uses">Uses: INF</label>
+                    <br><br>
+                </div>
+            </div>
+        </div>
+
+        <div class="div1">
+            <div id="div2">
+                <label for="latexCodeInline">Latex Inline</label>
+                <textarea id="latexCodeInline" rows="1" cols="80" readonly></textarea>
+                <button class="button" onclick="copy_to_clipboard('latexCodeInline')">Copy</button>
+            </div>
+            
+            <div id="div2">
+                <label for="latexCodeDisplay">Latex Display</label>
+                <textarea id="latexCodeDisplay" rows="1" cols="80" readonly></textarea>
+                <button class="button" onclick="copy_to_clipboard('latexCodeDisplay')">Copy</button>
+            </div>
+            
+            <div id="div2">
+                <label for="latexCodeEquation">Latex Equation</label>
+                <textarea id="latexCodeEquation" rows="1" cols="80" readonly></textarea>
+                <button class="button" onclick="copy_to_clipboard('latexCodeEquation')">Copy</button>
+            </div>
+            
+            <div id="div2">
+                <label for="wordCode">Word</label>
+                <textarea id="wordCode" rows="1" cols="80" readonly></textarea>
+                <button class="button" onclick="copy_to_clipboard('wordCode')">Copy</button>
+            </div>
+            
+        </div>
+        <div class="div1">
+            <h3>使用方法：用截图工具截图或将图片复制到剪切板后在本页面按Ctrl+V粘贴即可</h3>
+            <h4>*温馨提示：Windows 10 按 Win+Shift+S 即可截图到剪贴板</h4>
+            <h4>*部署了简单的反滥用措施，如果持续遇到错误请点击问题反馈提issue</h4>
+            <h4>服务器性能有限，没有反应的话可以等几秒钟，或者重新粘贴几次</h4>
+            <h4 >如果你觉得有帮到你，可以<a href="hello" target="_blank">赞赏支持</a></h4>
+            <div id="tips">
+                <p >在我的博客<a href="https://itewqq.cn/image-to-latex-convert-app/" target="_blank">了解关于本项目</a> </p>
+                <p ><a href="https://github.com/itewqq/MathF/issues" target="_blank">问题反馈</a></p>
+                <p ><a href="https://t.me/FuckerQu" target="_blank">联系我</a></p>
+            </div>
+        </div>
+        <script type="application/javascript">
+            document.getElementById("rad_pay").addEventListener('change', function (event) {
+                document.getElementById("id_and_key").style.display="";;
+            });
+            document.getElementById("rad_free").addEventListener('change', function (event) {
+                document.getElementById("id_and_key").style.display="none";;
+            });
+        </script>
+    </body>
+</html>
