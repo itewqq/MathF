@@ -1,5 +1,7 @@
 # MathF
 
+## 更新: 由于经济原因本人已无力继续维护此服务，有愿意接手的人可以[点击此处](https://t.me/FuckerQu)与我联系，谢谢
+
 ## 更新：支持快捷键，Word公式转换效果更好的Windows客户端已上线： https://itewqq.cn/mathpixcsharp-opensource-windows-client/
 
 ## **更新：网站转移到了我自己的国内服务器上，现在每个月的支出已经**远远**超过了我的预期，因此不得已加入了广告试图弥补一些收入。谢谢之前的几位为我打赏的同学！！！从今天(2021.2.21)开始的每一笔打赏我将会维护在这里：[捐助名单](https://github.com/itewqq/MathF/blob/master/donatelist.md)**
